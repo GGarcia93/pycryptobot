@@ -94,8 +94,9 @@ class TradingGraphs:
             (self.df.ema12gtema26co is True)
             & (self.df.macdgtsignal is True)
             & (self.df.goldencross is True)
+            & (self.df.asm_buy is True)
         )
-        sellsignals = (self.df.ema12ltema26co is True) & (self.df.macdltsignal is True)
+        sellsignals = (self.df.ema12ltema26co is True) & (self.df.macdltsignal is True) & (self.df.asm_sell is True)
         df_signals = self.df[(buysignals) | (sellsignals)]
 
         ax1 = plt.subplot(211)
@@ -110,6 +111,7 @@ class TradingGraphs:
             if (
                 row["ema12gtema26co"] is True
                 and row["macdgtsignal"] is True
+                and row["asm_buy"] is True
                 and last_action != "buy"
             ):
                 action = "buy"
@@ -117,6 +119,7 @@ class TradingGraphs:
             elif (
                 row["ema12ltema26"] is True
                 and row["macdltsignal"] is True
+                and row["asm_sell"] is True
                 and action == "buy"
             ):
                 action = "sell"

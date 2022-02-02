@@ -7,6 +7,7 @@ class Granularity(Enum):
     FIFTEEN_MINUTES = 900, "15m", "15min", "15T"
     THIRTY_MINUTES = 1800, "30m", "30min", "30T"
     ONE_HOUR = 3600, "1h", "1hour", "1H"
+    THREE_HOUR = 10800, "3h", "3hour", "3H"
     SIX_HOURS = 21600, "6h", "6hour", "6H"
     ONE_DAY = 86400, "1d", "1day", "1D"
 

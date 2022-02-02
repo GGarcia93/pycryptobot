@@ -106,6 +106,7 @@ class GuiSetup:
                 EMA = TextBox(app, grid=[8, row])
                 MACD = TextBox(app, grid=[9, row])
                 OBV = TextBox(app, grid=[10, row])
+                ASM = TextBox(app, grid=[11, row])
 
                 tpair.value = file.replace(".json", "")
                 exchange.value = data["exchange"] if "exchange" in data else "waiting to buy"
@@ -119,7 +120,7 @@ class GuiSetup:
                 EMA.repeat(5100, self.update_indicator, args=[EMA, file, "EMA"])
                 MACD.repeat(5100, self.update_indicator, args=[MACD, file, "MACD"])
                 OBV.repeat(5100, self.update_indicator, args=[OBV, file, "EMA"])
-
+                ASM.repeat(5100, self.update_indicator, args=[ASM, file, "ASM"])
                 row += 1
 ### updates the margin and delta boxes ###
 
@@ -181,6 +182,7 @@ BULL_label = Text(app, text="BULL", grid=[7, 1])
 EMA_label = Text(app, text="EMA", grid=[8, 1])
 MACD_label = Text(app, text="MACD", grid=[9, 1])
 OBV_label = Text(app, text="OBV", grid=[10, 1])
+ASM_label = Text(app, text="ASM", grid=[11,1])
 
 ###making boxes for the display###
 

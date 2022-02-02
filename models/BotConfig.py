@@ -88,6 +88,7 @@ class BotConfig:
         self.disablebuyema = False
         self.disablebuyobv = False
         self.disablebuyelderray = False
+        self.disablebuyasm = False
         self.disablefailsafefibonaccilow = False
         self.disablefailsafelowerpcnt = False
         self.disableprofitbankupperpcnt = False
@@ -556,6 +557,11 @@ class BotConfig:
             "--disablebuyelderray",
             action="store_true",
             help="disable elder ray buy signal",
+        )
+        parser.add_argument(
+            "--disablebuyasm",
+            action="store_true",
+            help="disable asm buy signal",
         )
         parser.add_argument(
             "--disablefailsafefibonaccilow",

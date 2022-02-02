@@ -1,25 +1,20 @@
 """Technical analysis on a trading Pandas DataFrame"""
 
+import statistics
 import warnings
-
-from re import compile
-from numpy import (
-    abs,
-    floor,
-    max,
-    maximum,
-    mean,
-    minimum,
-    nan,
-    ndarray,
-    round,
-    sum as np_sum,
-    where,
-)
-from pandas import concat, DataFrame, Series
 from datetime import datetime, timedelta
-from statsmodels.tsa.statespace.sarimax import SARIMAX, SARIMAXResultsWrapper
+from re import compile
+
+import pandas as pd
+import pandas_ta as ta
+from numpy import abs, floor, max, maximum, mean, minimum, nan, ndarray, round
+from numpy import sum as np_sum
+from numpy import where
+from pandas import DataFrame, Series, concat
+from pandas_ta.utils import get_offset, verify_series
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
+from statsmodels.tsa.statespace.sarimax import SARIMAX, SARIMAXResultsWrapper
+
 from models.helper.LogHelper import Logger
 
 warnings.simplefilter("ignore", ConvergenceWarning)
@@ -94,6 +89,7 @@ class TechnicalAnalysis:
         self.addEMABuySignals()
         self.addSMABuySignals()
         self.addMACDBuySignals()
+        self.addAsmBuySignals()
 
         self.addADXBuySignals()
 
@@ -1332,6 +1328,106 @@ class TechnicalAnalysis:
             self.df.macdltsignal.shift()
         )
         self.df.loc[self.df["macdltsignal"] == False, "macdltsignalco"] = False
+    
+    def addAsmBuySignals(self) -> None:
+        if not isinstance(self.df, DataFrame):
+            raise TypeError("Pandas DataFrame required.")
+
+        if not "close" in self.df.columns:
+            raise AttributeError("Pandas DataFrame 'close' column required.")
+
+        if (
+            not self.df["close"].dtype == "float64"
+            and not self.df["close"].dtype == "int64"
+        ):
+            raise AttributeError(
+                "Pandas DataFrame 'close' column not int64 or float64."
+            )
+
+        high = self.df["high"]
+        low = self.df["low"]
+        close = self.df["close"]
+        HMA1 = 55
+        HMA2 = 80
+        fast = self.df.ta.hma( length = HMA1)
+        
+        print('Hma Fast = ',fast)
+        slow = self.df.ta.hma(close = close, length = HMA2)
+        print('Hma Slow = ',slow)
+        trendu = fast.gt(slow)
+        trendd = fast.lt(slow)
+        
+        "//check I picked right numbers for candle close otherwise shift forward 1"
+        delta = close.shift(4)
+        alpha = close.shift(3)
+        beta = close.shift(2)
+        gamma = close.shift(1)
+
+        x = alpha - delta
+        y = beta - alpha
+        z = gamma - beta
+        a = alpha + delta
+        b = beta + alpha
+        g = gamma + beta
+        P1 = x/a
+        P1a = P1 / 2
+        P1b = P1a * alpha
+        P2 = y / b
+        P2a = P2 / 2
+        P2b = P2a * beta
+        P3 = z / g
+        P3a = P3 / 2
+        P3b = P3a * gamma
+        greeksum = P1b + P2b + P3b
+        a_t = greeksum / 3
+        ASV = a_t + gamma
+        print('ASV:',ASV)
+
+        SutteL = (close + gamma) / 2 + close - low
+        print('SutteL:',SutteL)
+        SutteH = (close + gamma) / 2 + high - close 
+        print('SutteH:',SutteH)
+        Sutte = (SutteL + SutteH) / 2
+        print('Sutte:',Sutte)
+        AdaptiveASV = (ASV + Sutte)/2
+        
+        
+        print('Adaptive ASV = ',AdaptiveASV)
+
+        SutteLMA = self.df.ta.sma(close = SutteL, length = HMA2)
+        print('SutteLMA = ',SutteLMA)
+        SutteHMA = self.df.ta.sma(close = SutteH, length = HMA2)
+        
+        s = AdaptiveASV.gt(SutteLMA)
+        Buy = trendu & (AdaptiveASV.gt(SutteLMA)) 
+        print('Trend up = ',trendu)
+        print('Check ASV1 =',(AdaptiveASV.gt(SutteLMA)) )
+        print('Buy Now = ' , Buy)
+        Sell = trendd & (AdaptiveASV.lt(SutteLMA))
+        print('Trend Down =',trendd)
+        print('Check ASV2 =',(AdaptiveASV.lt(SutteLMA)) )
+        print('Sell Now = ' ,Sell)
+
+
+        # true if asm opens
+        self.df["asm_buy"] = Buy
+        print(self.df["asm_buy"])
+        # true if the current frame is where MACD crosses over above
+        self.df["asm_buyco"] = self.df.asm_buy.ne(
+            self.df.asm_buy.shift()
+        )
+        print(self.df["asm_buyco"])
+        self.df.loc[self.df["asm_buy"] == False, "asm_buyco"] = False
+        print(self.df["asm_buy"])
+        print(self.df["asm_buyco"])
+    
+        # true if the MACD is below the Signal
+        self.df["asm_sell"] = Sell
+        # true if the current frame is where MACD crosses over below
+        self.df["asm_sellco"] = self.df.asm_sell.ne(
+            self.df.asm_sell.shift()
+        )
+        self.df.loc[self.df["asm_sell"] == False, "asm_sellco"] = False
 
     def getFibonacciRetracementLevels(self, price: float = 0) -> dict:
         # validates price is numeric
@@ -1494,3 +1590,6 @@ class TechnicalAnalysis:
 
     def __truncate(self, f, n) -> float:
         return floor(f * 10 ** n) / 10 ** n
+
+
+

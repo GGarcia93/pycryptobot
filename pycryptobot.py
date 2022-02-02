@@ -436,6 +436,10 @@ def executeJob(
         obv_pc = float(df_last["obv_pc"].values[0])
         elder_ray_buy = bool(df_last["eri_buy"].values[0])
         elder_ray_sell = bool(df_last["eri_sell"].values[0])
+        asm_buy = bool(df_last["asm_buy"].values[0])
+        asm_buyco = bool(df_last["asm_buyco"].values[0])
+        asm_sell = bool(df_last["asm_sell"].values[0])
+        asm_sellco = bool(df_last["asm_sellco"].values[0])
 
         # if simulation, set goldencross based on actual sim date
         if _app.isSimulation():
@@ -466,6 +470,8 @@ def executeJob(
             telegram_bot.addindicators("MACD", macdgtsignal or macdgtsignalco)
         if not _app.disableBuyOBV():
             telegram_bot.addindicators("OBV", float(obv_pc) > 0)
+        if not _app.disableBuyAsm():
+            telegram_bot.addindicators("ASM", asm_buy or asm_buyco)
 
         if _app.isSimulation():
             # Reset the Strategy so that the last record is the current sim date
@@ -555,6 +561,7 @@ def executeJob(
                 change_pcnt_high,
                 obv_pc,
                 macdltsignal,
+                asm_sell,
             ):
                 _state.action = "SELL"
                 _state.last_action = "BUY"
@@ -626,6 +633,16 @@ def executeJob(
                     "MACD",
                     precision,
                 )
+            
+            asm_text = ""
+            if _app.disableBuyAsm() is False:
+                if asm_buy is True:
+                    asm_text = "ASM: buy | "
+                elif asm_sell is True:
+                    asm_text = "ASM: sell | "
+                else:
+                    asm_text = "ASM: Idle | " 
+
 
             obv_text = ""
             if _app.disableBuyOBV() is False:
@@ -724,6 +741,21 @@ def executeJob(
                     macd_co_prefix = "v "
                     macd_co_suffix = " v | "
 
+            asm_co_prefix = ""
+            asm_co_suffix = ""
+            if _app.disableBuyAsm() is False:
+                if asm_buy is True:
+                    asm_co_prefix = "*^ "
+                    asm_co_suffix = " ^* | "
+                elif asm_buyco is True:
+                    asm_co_prefix = "*v "
+                    asm_co_suffix = " v* | "
+                elif asm_sell is True:
+                    asm_co_prefix = "^ "
+                    asm_co_suffix = " ^ | "
+                elif asm_sellco is True:
+                    asm_co_prefix = "v "
+                    asm_co_suffix = " v | "
             obv_prefix = ""
             obv_suffix = ""
             if _app.disableBuyOBV() is False:
@@ -758,6 +790,9 @@ def executeJob(
                             + macd_co_prefix
                             + macd_text
                             + macd_co_suffix
+                            + asm_text
+                            + asm_co_prefix
+                            + asm_co_suffix
                             + obv_prefix
                             + obv_text
                             + obv_suffix
@@ -817,6 +852,9 @@ def executeJob(
                             + macd_co_prefix
                             + macd_text
                             + macd_co_suffix
+                            + asm_text
+                            + asm_co_prefix
+                            + asm_co_suffix
                             + obv_prefix
                             + obv_text
                             + obv_suffix
@@ -859,6 +897,9 @@ def executeJob(
                             + macd_co_prefix
                             + macd_text
                             + macd_co_suffix
+                            + asm_text
+                            + asm_co_prefix
+                            + asm_co_suffix
                             + obv_prefix
                             + obv_text
                             + obv_suffix
@@ -916,6 +957,9 @@ def executeJob(
                             + macd_co_prefix
                             + macd_text
                             + macd_co_suffix
+                            + asm_text
+                            + asm_co_prefix
+                            + asm_co_suffix
                             + obv_prefix
                             + obv_text
                             + obv_suffix
@@ -1021,6 +1065,8 @@ def executeJob(
                     Logger.debug(f"obv: {str(obv)}")
                     Logger.debug(f"obv_pc: {str(obv_pc)}")
                     Logger.debug(f"action: {_state.action}")
+                    Logger.debug(f"asm_buy: {str(asm_buy)}")
+                    Logger.debug(f"asm_sell: {str(asm_sell)}")
 
                 # informational output on the most recent entry
                 Logger.info("")
@@ -1064,6 +1110,7 @@ def executeJob(
                 text_box.line("Signal", truncate(float(df_last["signal"].values[0])))
                 text_box.line("Currently Above", str(macdgtsignal))
                 text_box.line("Currently Below", str(macdltsignal))
+                
 
                 if macdgtsignal is True and macdgtsignalco is True:
                     text_box.line(

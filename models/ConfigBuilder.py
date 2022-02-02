@@ -68,8 +68,8 @@ class ConfigBuilder():
             choice = input("Do you want to smart switch between 1 hour and 15 minute intervals (1=yes:default, 2=no)? ")
             if choice == '2':
                 while 'granularity' not in config['coinbasepro']['config']:
-                    choice = input("What granularity do you want to trade? (60, 300, 900, 3600, 21600, 86400)? ")
-                    if int(choice) in [60, 300, 900, 3600, 21600, 86400]:
+                    choice = input("What granularity do you want to trade? (60, 300, 900, 3600, 10800, 21600, 86400)? ")
+                    if int(choice) in [60, 300, 900, 3600, 10800, 21600, 86400]:
                         config['coinbasepro']['config']['granularity'] = int(choice)
 
 
@@ -120,8 +120,8 @@ class ConfigBuilder():
             choice = input("Do you want to smart switch between 1 hour and 15 minute intervals (1=yes:default, 2=no)? ")
             if choice == '2':
                 while 'granularity' not in config['binance']['config']:
-                    choice = input("What granularity do you want to trade? (1m, 5m, 15m, 1h, 6h, 1d)? ")
-                    if choice in ['1m', '5m', '15m', '1h', '6h', '1d']:
+                    choice = input("What granularity do you want to trade? (1m, 5m, 15m, 1h, 3h, 6h, 1d)? ")
+                    if choice in ['1m', '5m', '15m', '1h', '3h','6h', '1d']:
                         config['binance']['config']['granularity'] = choice
 
             choice = input("Do you want to start live trading? (1=live, 2=test:default)? ")
@@ -177,8 +177,8 @@ class ConfigBuilder():
             choice = input("Do you want to smart switch between 1 hour and 15 minute intervals (1=yes:default, 2=no)? ")
             if choice == '2':
                 while 'granularity' not in config['kucoin']['config']:
-                    choice = input("What granularity do you want to trade? (60, 300, 900, 3600, 21600, 86400)? ")
-                    if int(choice) in [60, 300, 900, 3600, 21600, 86400]:
+                    choice = input("What granularity do you want to trade? (60, 300, 900, 3600, 10800, 21600, 86400)? ")
+                    if int(choice) in [60, 300, 900, 3600, 10800, 21600, 86400]:
                         config['kucoin']['config']['granularity'] = int(choice)
 
 

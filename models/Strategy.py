@@ -41,6 +41,7 @@ class Strategy:
             "goldencross",
             "obv_pc",
             "eri_buy",
+            "asm_buy"
         ]
 
         for indicator in required_indicators:
@@ -84,8 +85,8 @@ class Strategy:
             return False
 
         # if EMA, MACD are disabled, do not buy
-        if self.app.disableBuyEMA() and self.app.disableBuyMACD():
-            log_text = f"{str(now)} | {self.app.getMarket()} | {self.app.printGranularity()} | EMA, MACD indicators are disabled"
+        if self.app.disableBuyEMA() and self.app.disableBuyMACD() and self.app.disableBuyAsm():
+            log_text = f"{str(now)} | {self.app.getMarket()} | {self.app.printGranularity()} | EMA, MACD, ASM indicators are disabled"
             Logger.warning(log_text)
 
             return False
@@ -117,6 +118,10 @@ class Strategy:
                 bool(self._df_last["eri_buy"].values[0]) is True
                 or self.app.disableBuyElderRay()
             )
+            and (
+                bool(self._df_last["asm_buy"].values[0]) is True
+                or self.app.disableBuyAsm()
+            )
             and self.state.last_action != "BUY"
         ):  # required for all strategies
 
@@ -147,6 +152,10 @@ class Strategy:
                 bool(self._df_last["eri_buy"].values[0]) is True
                 or self.app.disableBuyElderRay()
             )
+            and (
+                bool(self._df_last["asm_buy"].values[0]) is True
+                or self.app.disableBuyAsm()
+            )
             and self.state.last_action != "BUY"
         ):  # required for all strategies
 
@@ -164,7 +173,7 @@ class Strategy:
         # set to true for verbose debugging
         debug = False
         # required technical indicators or candle sticks for buy signal strategy
-        required_indicators = ["ema12ltema26co", "macdltsignal"]
+        required_indicators = ["ema12ltema26co", "macdltsignal", "asm_sell"]
 
         for indicator in required_indicators:
             if indicator not in self._df_last:
@@ -172,10 +181,17 @@ class Strategy:
 
         # criteria for a sell signal 1
         if (
-            bool(self._df_last["ema12ltema26co"].values[0]) is True
+            (
+                bool(self._df_last["ema12ltema26co"].values[0]) is True
+                or self.app.disableBuyEMA()
+            )
             and (
                 bool(self._df_last["macdltsignal"].values[0]) is True
                 or self.app.disableBuyMACD()
+            )
+            and (
+                bool(self._df_last["asm_sell"].values[0]) is True
+                or self.app.disableBuyAsm()
             )
             and self.state.last_action not in ["", "SELL"]
         ):
@@ -200,6 +216,7 @@ class Strategy:
         change_pcnt_high: float = 0.0,
         obv_pc: float = 0.0,
         macdltsignal: bool = False,
+        asm_sell: bool = False,
     ) -> bool:
         # set to true for verbose debugging
         debug = False

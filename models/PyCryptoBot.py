@@ -854,6 +854,9 @@ class PyCryptoBot(BotConfig):
 
     def disableBuyElderRay(self) -> bool:
         return self.disablebuyelderray
+    
+    def disableBuyAsm(self) -> bool:
+        return self.disablebuyasm
 
     def disableFailsafeFibonacciLow(self) -> bool:
         return self.disablefailsafefibonaccilow
@@ -1443,6 +1446,9 @@ class PyCryptoBot(BotConfig):
             str(not self.disableBuyElderRay()) + "  --disablebuyelderray",
         )
         text_box.line(
+            "Use Buy ASM", str(not self.disableBuyAsm()) + "  --disablebuyasm"
+        )
+        text_box.line(
             "Sell Fibonacci Low",
             str(not self.disableFailsafeFibonacciLow())
             + "  --disablefailsafefibonaccilow",
@@ -1528,9 +1534,9 @@ class PyCryptoBot(BotConfig):
                 str(self.marketMultiBuyCheck()) + "  --marketmultibuycheck",
             )
 
-        if self.disablebuyema and self.disablebuymacd:
+        if self.disablebuyema and self.disablebuymacd and self.disablebuyasm:
             text_box.center(
-                "WARNING : EMA and MACD indicators disabled, no buy events will happen"
+                "WARNING : EMA, MACD, and ASM indicators disabled, no buy events will happen"
             )
 
         text_box.doubleLine()
